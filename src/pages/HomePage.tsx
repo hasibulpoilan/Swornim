@@ -1,6 +1,5 @@
 import { MapPin, Phone, Globe } from 'lucide-react'
 import { useCallback, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useCart } from '../cart/CartContext'
 import { useMenu } from '../menu/MenuContext'
 import { ProductCard } from '../components/ProductCard'
