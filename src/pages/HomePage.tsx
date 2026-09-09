@@ -1,4 +1,4 @@
-import { MapPin, Phone, Globe, Lock } from 'lucide-react'
+import { MapPin, Phone, Globe } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../cart/CartContext'
@@ -103,11 +103,6 @@ export function HomePage() {
             <div className="contact-row">
               <Globe size={18} color="var(--primary)" />
               www.swornimdelicacies.com
-            </div>
-            <div className="admin-footer-link">
-              <Link to="/admin">
-                <Lock size={14} /> Admin Portal
-              </Link>
             </div>
           </div>
         </div>
