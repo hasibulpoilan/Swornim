@@ -118,6 +118,162 @@ button {
   }
 }
 
+/* ==========================================================================
+   Public Search & Filter Bar
+   ========================================================================== */
+
+.menu-filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.search-icon-left {
+  position: absolute;
+  left: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 14px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.search-clear-btn:hover {
+  background: #ffedd5;
+  color: var(--primary);
+}
+
+.menu-search-input {
+  width: 100%;
+  padding: 14px 44px 14px 48px;
+  border: 2px solid var(--border-color);
+  border-radius: 50px;
+  font: inherit;
+  font-size: 1rem;
+  background: #fff8f3;
+  color: var(--text-main);
+  transition: all 0.2s ease;
+}
+
+.menu-search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 4px #ea580c1a;
+}
+
+.compact-dropdowns-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-select-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 180px;
+  background: #fff8f3;
+  border: 1.5px solid var(--border-color);
+  border-radius: 30px;
+  padding: 8px 14px;
+  transition: all 0.2s ease;
+}
+
+.filter-select-wrap:focus-within,
+.filter-select-wrap:hover {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px #ea580c1a;
+}
+
+.filter-label-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.filter-dropdown {
+  width: 100%;
+  background: transparent;
+  border: none;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  outline: none;
+}
+
+.menu-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-lg);
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.menu-empty-state h3 {
+  font-size: 1.3rem;
+  color: var(--text-main);
+}
+
+.menu-empty-state p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.btn-reset-filters {
+  background: #fff7ed;
+  color: var(--primary);
+  border: 1.5px solid var(--border-color);
+  border-radius: 50px;
+  padding: 10px 22px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-reset-filters:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
 .menu-category {
   margin-bottom: 40px;
 }
@@ -159,6 +315,10 @@ button {
 .item-card.selected {
   border-color: var(--primary);
   background: #fffaf5;
+}
+
+.item-card.in-cart {
+  border-color: #fed7aa;
 }
 
 .checkbox-custom {
@@ -215,6 +375,52 @@ button {
 
 .add-btn:hover {
   background: var(--primary-hover);
+}
+
+.qty-stepper {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 999px;
+  padding: 4px 6px;
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.25);
+  user-select: none;
+}
+
+.qty-btn {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.qty-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.08);
+}
+
+.qty-btn:active {
+  transform: scale(0.92);
+}
+
+.qty-count {
+  font-family: Outfit, sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  min-width: 16px;
+  text-align: center;
+  color: #fff;
 }
 
 @media (width <= 420px) {

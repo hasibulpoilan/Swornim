@@ -1,5 +1,13 @@
-import { MapPin, Phone, Globe } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import {
+  MapPin,
+  Phone,
+  Globe,
+  Search,
+  X,
+  SlidersHorizontal,
+  RotateCcw,
+} from 'lucide-react'
+import { useCallback, useMemo, useState } from 'react'
 import { useCart } from '../cart/CartContext'
 import { useMenu } from '../menu/MenuContext'
 import { ProductCard } from '../components/ProductCard'
@@ -7,19 +15,98 @@ import { CartBar } from '../components/CartBar'
 import { CartToast } from '../components/CartToast'
 import type { MenuItem } from '../types'
 
+const NON_VEG_KEYWORDS = ['chicken', 'egg', 'mutton', 'fish', 'prawn', 'sausage', 'bacon']
+
+function isNonVeg(name: string): boolean {
+  const lower = name.toLowerCase()
+  return NON_VEG_KEYWORDS.some((kw) => lower.includes(kw))
+}
+
+function parseItemPrice(priceStr?: string): number {
+  if (!priceStr) return Infinity
+  const cleaned = priceStr.replace(/rs\.?/gi, '').replace(/,/g, '').trim()
+  const match = cleaned.match(/(\d+(?:\.\d+)?)/)
+  return match ? Number(match[1]) : Infinity
+}
+
 export function HomePage() {
   const cart = useCart()
   const { menu, loading } = useMenu()
   const [toastOpen, setToastOpen] = useState(false)
   const [toastMsg, setToastMsg] = useState('')
 
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('ALL')
+  const [dietaryFilter, setDietaryFilter] = useState<'ALL' | 'VEG' | 'NON_VEG'>('ALL')
+  const [priceSort, setPriceSort] = useState<'DEFAULT' | 'LOW_HIGH' | 'HIGH_LOW'>('DEFAULT')
+
   const closeToast = useCallback(() => setToastOpen(false), [])
+
+  const resetFilters = useCallback(() => {
+    setSearchQuery('')
+    setSelectedCategory('ALL')
+    setDietaryFilter('ALL')
+    setPriceSort('DEFAULT')
+  }, [])
 
   const handleAdd = (item: MenuItem) => {
     cart.addItem(item)
     setToastMsg(`${item.name} added to cart`)
     setToastOpen(true)
   }
+
+  const totalItemCount = useMemo(() => {
+    return menu.reduce((acc, cat) => acc + cat.items.length, 0)
+  }, [menu])
+
+  const filteredMenu = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+
+    return menu
+      .map((section) => {
+        if (selectedCategory !== 'ALL' && section.category !== selectedCategory) {
+          return null
+        }
+
+        let items = section.items.filter((item) => {
+          if (q && !item.name.toLowerCase().includes(q)) {
+            return false
+          }
+
+          const nonVeg = isNonVeg(item.name)
+          if (dietaryFilter === 'VEG' && nonVeg) return false
+          if (dietaryFilter === 'NON_VEG' && !nonVeg) return false
+
+          return true
+        })
+
+        if (priceSort === 'LOW_HIGH') {
+          items = [...items].sort((a, b) => parseItemPrice(a.price) - parseItemPrice(b.price))
+        } else if (priceSort === 'HIGH_LOW') {
+          items = [...items].sort((a, b) => {
+            const pa = parseItemPrice(a.price)
+            const pb = parseItemPrice(b.price)
+            if (pa === Infinity) return 1
+            if (pb === Infinity) return -1
+            return pb - pa
+          })
+        }
+
+        if (items.length === 0) return null
+
+        return {
+          category: section.category,
+          items,
+        }
+      })
+      .filter(Boolean) as typeof menu
+  }, [menu, searchQuery, selectedCategory, dietaryFilter, priceSort])
+
+  const hasActiveFilters =
+    searchQuery.trim() !== '' ||
+    selectedCategory !== 'ALL' ||
+    dietaryFilter !== 'ALL' ||
+    priceSort !== 'DEFAULT'
 
   return (
     <div className="split-layout">
@@ -48,8 +135,94 @@ export function HomePage() {
       </div>
 
       <div className="right-panel">
+        {/* Search & Filter Bar */}
+        <div className="menu-filter-container">
+          <div className="search-input-wrap">
+            <Search className="search-icon-left" size={20} />
+            <input
+              type="text"
+              className="menu-search-input"
+              placeholder="Search items by name… e.g. Rasogolla, Sandwich, Coffee"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="search-clear-btn"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
+
+          <div className="compact-dropdowns-row">
+            {/* 1. Category Dropdown */}
+            <div className="filter-select-wrap">
+              <span className="filter-label-icon">📁</span>
+              <select
+                className="filter-dropdown"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <option value="ALL">All Categories ({totalItemCount})</option>
+                {menu.map((sec) => (
+                  <option key={sec.category} value={sec.category}>
+                    {sec.category} ({sec.items.length})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 2. Dietary Filter Dropdown */}
+            <div className="filter-select-wrap">
+              <span className="filter-label-icon">🥗</span>
+              <select
+                className="filter-dropdown"
+                value={dietaryFilter}
+                onChange={(e) => setDietaryFilter(e.target.value as typeof dietaryFilter)}
+              >
+                <option value="ALL">All Types (Veg & Non-Veg)</option>
+                <option value="VEG">🟢 Veg Only</option>
+                <option value="NON_VEG">🔴 Non-Veg Only</option>
+              </select>
+            </div>
+
+            {/* 3. Price Sort Dropdown */}
+            <div className="filter-select-wrap">
+              <SlidersHorizontal size={16} color="var(--primary)" />
+              <select
+                className="filter-dropdown"
+                value={priceSort}
+                onChange={(e) => setPriceSort(e.target.value as typeof priceSort)}
+              >
+                <option value="DEFAULT">Sort: Default</option>
+                <option value="LOW_HIGH">Price: Low to High</option>
+                <option value="HIGH_LOW">Price: High to Low</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         {loading && <p className="menu-loading">Loading menu…</p>}
-        {menu.map((section) => (
+
+        {!loading && filteredMenu.length === 0 && (
+          <div className="menu-empty-state">
+            <h3>No items match your search</h3>
+            <p>
+              We couldn't find any items matching your selected search or filters.
+            </p>
+            {hasActiveFilters && (
+              <button type="button" className="btn-reset-filters" onClick={resetFilters}>
+                <RotateCcw size={16} /> Clear All Filters
+              </button>
+            )}
+          </div>
+        )}
+
+        {filteredMenu.map((section) => (
           <div key={section.category} className="menu-category">
             <h2 className="category-title">{section.category}</h2>
             <div className="items-grid">
@@ -58,8 +231,11 @@ export function HomePage() {
                   key={item.id}
                   item={item}
                   selected={cart.isSelected(item.id)}
+                  qty={cart.getQty(item.id)}
                   onToggleSelect={() => cart.toggleSelect(item)}
                   onAddToCart={() => handleAdd(item)}
+                  onIncrement={() => cart.increment(item.id)}
+                  onDecrement={() => cart.decrement(item.id)}
                 />
               ))}
             </div>
@@ -110,6 +286,7 @@ export function HomePage() {
       <CartBar
         selectedCount={cart.selected.length}
         cartCount={cart.count}
+        totalPrice={cart.selectedSubtotal}
         onSendWhatsApp={cart.sendSelectedWhatsApp}
       />
 
@@ -117,3 +294,4 @@ export function HomePage() {
     </div>
   )
 }
+

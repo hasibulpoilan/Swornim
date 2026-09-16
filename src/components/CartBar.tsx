@@ -1,18 +1,21 @@
 import { MessageCircle, ShoppingCart } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { formatRs } from '../cart/cartUtils'
 
 type CartBarProps = {
   selectedCount: number
   cartCount: number
+  totalPrice?: number
   onSendWhatsApp: () => void
 }
 
 export function CartBar({
   selectedCount,
   cartCount,
+  totalPrice = 0,
   onSendWhatsApp,
 }: CartBarProps) {
-  const noneSelected = selectedCount === 0
+  const hasSelected = selectedCount > 0
 
   return (
     <div className="order-bar">
@@ -21,9 +24,18 @@ export function CartBar({
           <div>
             <h3>Your Order</h3>
             <p>
-              {noneSelected
-                ? 'Select items from the menu'
-                : `${selectedCount} item${selectedCount > 1 ? 's' : ''} ready`}
+              {!hasSelected ? (
+                'Select items from the menu'
+              ) : (
+                <>
+                  {selectedCount} item{selectedCount > 1 ? 's' : ''} ready
+                  {totalPrice > 0 && (
+                    <span className="order-bar-price-tag">
+                      {' · '}Total: <strong>{formatRs(totalPrice)}</strong>
+                    </span>
+                  )}
+                </>
+              )}
             </p>
           </div>
           {cartCount > 0 && (
@@ -38,7 +50,7 @@ export function CartBar({
       <button
         type="button"
         className="btn-order"
-        disabled={noneSelected}
+        disabled={!hasSelected}
         onClick={onSendWhatsApp}
       >
         <MessageCircle size={20} />

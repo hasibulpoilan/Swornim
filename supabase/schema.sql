@@ -13,7 +13,7 @@ create table if not exists public.products (
 );
 
 create index if not exists products_category_idx on public.products (category);
-create index if not exists products_visible_sort_idx on public.products (is_visible, sort_order);
+create index if not exists products_visible_sort_   idx on public.products (is_visible, sort_order);
 
 alter table public.products enable row level security;
 

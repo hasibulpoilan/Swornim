@@ -24,6 +24,7 @@ type CartContextValue = {
   items: CartItem[]
   count: number
   subtotal: number
+  selectedSubtotal: number
   addItem: (item: MenuItem) => void
   setQty: (id: string, qty: number) => void
   increment: (id: string) => void
@@ -125,6 +126,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const count = useMemo(() => cartItemCount(items), [items])
   const subtotal = useMemo(() => cartSubtotal(items), [items])
+  const selectedSubtotal = useMemo(() => {
+    return cartSubtotal(selected.map(toCartItem))
+  }, [selected])
+
   const getQty = useCallback(
     (id: string) => items.find((p) => p.id === id)?.qty ?? 0,
     [items],
@@ -135,23 +140,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
     openWhatsApp(buildWhatsAppMessage(items))
   }, [items])
 
-  /** Original site message — names only */
+  /** Quick Order via checkbox selection — names only */
   const sendSelectedWhatsApp = useCallback(() => {
-    if (items.length > 0) {
-      openWhatsApp(buildWhatsAppMessage(items))
-      return
-    }
-    if (selected.length > 0) {
-      const cartItems = selected.map(toCartItem)
-      openWhatsApp(buildWhatsAppMessage(cartItems))
-    }
-  }, [items, selected])
+    if (selected.length === 0) return
+    const cartItems = selected.map(toCartItem)
+    openWhatsApp(buildWhatsAppMessage(cartItems))
+  }, [selected])
 
   const value = useMemo(
     () => ({
       items,
       count,
       subtotal,
+      selectedSubtotal,
       addItem,
       setQty,
       increment,
@@ -169,6 +170,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       items,
       count,
       subtotal,
+      selectedSubtotal,
       addItem,
       setQty,
       increment,
