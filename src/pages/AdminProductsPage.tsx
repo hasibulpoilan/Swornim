@@ -257,14 +257,24 @@ export function AdminProductsPage() {
               onChange={handleImageUpload}
               disabled={busy}
               style={{ marginTop: '4px' }}
+              key={form.image_url || 'no-image'} // Resets the file input if image is removed
             />
             {form.image_url && (
-              <div style={{ marginTop: '8px' }}>
+              <div style={{ marginTop: '12px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                 <img 
                   src={form.image_url} 
                   alt="Preview" 
                   style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ccc' }} 
                 />
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, image_url: null }))}
+                  className="admin-secondary"
+                  disabled={busy}
+                  style={{ fontSize: '13px', padding: '6px 12px', marginTop: '4px' }}
+                >
+                  Remove Image
+                </button>
               </div>
             )}
           </label>
