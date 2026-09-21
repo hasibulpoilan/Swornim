@@ -1501,41 +1501,7 @@ export const MENU: MenuCategory[] = [
       }
     ]
   },
-  {
-    "category": "TEA & COFFEE",
-    "items": [
-      {
-        "id": "item_297",
-        "name": "Cappuccino Coffee",
-        "price": "Rs. 30"
-      },
-      {
-        "id": "item_298",
-        "name": "Espresso Coffee",
-        "price": "Rs. 25"
-      },
-      {
-        "id": "item_299",
-        "name": "Assam Tea With Milk",
-        "price": "Rs. 20"
-      },
-      {
-        "id": "item_300",
-        "name": "Assam Tea Without Milk",
-        "price": "Rs. 15"
-      },
-      {
-        "id": "item_301",
-        "name": "Lemon Tea",
-        "price": "Rs. 15"
-      },
-      {
-        "id": "item_302",
-        "name": "Ginger Tea",
-        "price": "Rs. 20"
-      }
-    ]
-  },
+
   {
     "category": "SWORNIM PASTRIES",
     "items": [

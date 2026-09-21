@@ -12,11 +12,13 @@ export function formatProductPrice(price: number | null): string | undefined {
 export function productsToMenu(products: ProductRow[]): MenuCategory[] {
   const map = new Map<string, MenuItem[]>()
   for (const p of products) {
+    if (p.category.toUpperCase() === 'TEA & COFFEE') continue
     const list = map.get(p.category) ?? []
     list.push({
       id: p.id,
       name: p.name,
       price: formatProductPrice(p.price),
+      imageUrl: p.image_url,
     })
     map.set(p.category, list)
   }
@@ -44,7 +46,7 @@ export async function fetchAllProducts(): Promise<ProductRow[]> {
     .select('*')
     .order('sort_order', { ascending: true })
   if (error) throw error
-  return data ?? []
+  return (data ?? []).filter(p => p.category.toUpperCase() !== 'TEA & COFFEE')
 }
 
 export async function createProduct(input: {
@@ -52,6 +54,7 @@ export async function createProduct(input: {
   price: number | null
   category: string
   is_visible?: boolean
+  image_url?: string | null
 }): Promise<ProductRow> {
   if (!supabase) throw new Error('Supabase is not configured')
   const { data, error } = await supabase
@@ -61,6 +64,7 @@ export async function createProduct(input: {
       price: input.price,
       category: input.category.trim(),
       is_visible: input.is_visible ?? true,
+      image_url: input.image_url ?? null,
     })
     .select('*')
     .single()
@@ -75,6 +79,7 @@ export async function updateProduct(
     price: number | null
     category: string
     is_visible: boolean
+    image_url?: string | null
   },
 ): Promise<ProductRow> {
   if (!supabase) throw new Error('Supabase is not configured')
@@ -85,6 +90,7 @@ export async function updateProduct(
       price: input.price,
       category: input.category.trim(),
       is_visible: input.is_visible,
+      image_url: input.image_url ?? null,
     })
     .eq('id', id)
     .select('*')

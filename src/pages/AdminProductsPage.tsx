@@ -9,6 +9,7 @@ import {
   formatProductPrice,
   updateProduct,
 } from '../lib/products'
+import { supabase } from '../lib/supabase'
 import type { ProductRow } from '../lib/database.types'
 
 const EMPTY_FORM = {
@@ -16,6 +17,7 @@ const EMPTY_FORM = {
   price: '',
   category: 'Sandwiches & Burgers',
   is_visible: true,
+  image_url: '' as string | null,
 }
 
 function parsePriceInput(value: string): number | null {
@@ -64,8 +66,35 @@ export function AdminProductsPage() {
       price: p.price === null ? '' : String(p.price),
       category: p.category,
       is_visible: p.is_visible,
+      image_url: p.image_url,
     })
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0 || !supabase) return
+    const file = e.target.files[0]
+    setBusy(true)
+    setError(null)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+      const filePath = `${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('product-images').getPublicUrl(filePath)
+      
+      setForm((f) => ({ ...f, image_url: data.publicUrl }))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Image upload failed')
+    } finally {
+      setBusy(false)
+    }
   }
 
   const onSubmit = async (e: FormEvent) => {
@@ -80,6 +109,7 @@ export function AdminProductsPage() {
           price,
           category: form.category,
           is_visible: form.is_visible,
+          image_url: form.image_url,
         })
       } else {
         await createProduct({
@@ -87,6 +117,7 @@ export function AdminProductsPage() {
           price,
           category: form.category,
           is_visible: form.is_visible,
+          image_url: form.image_url,
         })
       }
       resetForm()
@@ -216,6 +247,26 @@ export function AdminProductsPage() {
               disabled={busy}
             />
             Visible on menu
+          </label>
+          
+          <label>
+            Product Image
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              disabled={busy}
+              style={{ marginTop: '4px' }}
+            />
+            {form.image_url && (
+              <div style={{ marginTop: '8px' }}>
+                <img 
+                  src={form.image_url} 
+                  alt="Preview" 
+                  style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ccc' }} 
+                />
+              </div>
+            )}
           </label>
           {error && <p className="admin-error">{error}</p>}
           <div className="admin-form-actions">

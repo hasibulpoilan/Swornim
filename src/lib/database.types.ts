@@ -14,6 +14,7 @@ export type ProductRow = {
   is_visible: boolean
   sort_order: number
   created_at: string
+  image_url: string | null
 }
 
 export type Database = {
@@ -29,6 +30,7 @@ export type Database = {
           is_visible?: boolean
           sort_order?: number
           created_at?: string
+          image_url?: string | null
         }
         Update: {
           id?: string
@@ -38,6 +40,7 @@ export type Database = {
           is_visible?: boolean
           sort_order?: number
           created_at?: string
+          image_url?: string | null
         }
         Relationships: []
       }

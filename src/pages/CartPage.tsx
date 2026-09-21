@@ -1,12 +1,29 @@
 import { ArrowLeft, MessageCircle, Minus, Plus, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { useCart } from '../cart/CartContext'
-import { cartLineTotal, formatRs } from '../cart/cartUtils'
+import { cartLineTotal, formatRs, isPastCutoffTime, getTimeRemainingToCutoff } from '../cart/cartUtils'
 
 export function CartPage() {
   const cart = useCart()
   const empty = cart.items.length === 0
   const hasUnpriced = cart.items.some((i) => i.unitPrice === null)
+
+  const [userDetails, setUserDetails] = useState({ name: '', phone: '', address: '' })
+  const [showError, setShowError] = useState(false)
+
+  // Force re-render every second to keep time live
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    const timer = setInterval(() => setTick(t => t + 1), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const pastCutoff = isPastCutoffTime()
+  const timeRemaining = getTimeRemainingToCutoff()
+  
+  const sameDayItems = pastCutoff ? [] : cart.items.filter(i => i.qty <= 10)
+  const nextDayItems = pastCutoff ? cart.items : cart.items.filter(i => i.qty > 10)
 
   return (
     <div className="cart-page">
@@ -31,6 +48,84 @@ export function CartPage() {
         </div>
       ) : (
         <>
+          <div style={{
+            backgroundColor: pastCutoff ? '#e2e3e5' : '#e8f5e9',
+            color: pastCutoff ? '#383d41' : '#155724',
+            padding: '20px',
+            borderRadius: '12px',
+            marginBottom: '24px',
+            fontSize: '14px',
+            border: `1px solid ${pastCutoff ? '#d6d8db' : '#c3e6cb'}`,
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '24px',
+            flexWrap: 'wrap'
+          }}>
+            {/* LEFT SIDE: Items Lists */}
+            <div style={{ flex: '1 1 auto', minWidth: '280px' }}>
+              <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', fontWeight: 'bold', opacity: 0.8, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: pastCutoff ? '#6c757d' : '#28a745' }}></span>
+                Important Note
+              </div>
+              
+              {pastCutoff ? (
+                <p style={{ margin: 0, fontSize: '15px' }}>All items will be delivered <strong>TOMORROW</strong>.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {nextDayItems.length > 0 && (
+                    <div style={{ backgroundColor: 'rgba(255,255,255,0.4)', padding: '12px', borderRadius: '8px' }}>
+                      <p style={{ margin: '0 0 6px 0' }}>Delivered <strong>tomorrow</strong> (qty &gt; 10):</p>
+                      <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.4' }}>
+                        {nextDayItems.map(i => <li key={i.id}>{i.name}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {sameDayItems.length > 0 && (
+                    <div style={{ backgroundColor: 'rgba(255,255,255,0.4)', padding: '12px', borderRadius: '8px' }}>
+                      <p style={{ margin: '0 0 6px 0' }}>Delivered <strong>today</strong>:</p>
+                      <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.4' }}>
+                        {sameDayItems.map(i => <li key={i.id}>{i.name}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* RIGHT SIDE: Timer */}
+            <div style={{
+              flex: '0 0 auto',
+              textAlign: 'center',
+              backgroundColor: pastCutoff ? 'rgba(0,0,0,0.05)' : '#ffffff',
+              padding: '16px 20px',
+              borderRadius: '12px',
+              minWidth: '240px',
+              boxShadow: pastCutoff ? 'none' : '0 2px 8px rgba(0,0,0,0.05)'
+            }}>
+              <strong style={{ display: 'block', marginBottom: pastCutoff ? '0' : '8px', fontSize: '16px' }}>
+                {pastCutoff ? '🌙 Delivery closed' : '⏳ Want it today?'}
+              </strong>
+              
+              {!pastCutoff && timeRemaining && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ fontSize: '13px', opacity: 0.85 }}>Order in the next</div>
+                  <strong style={{ 
+                    background: '#e8f5e9',
+                    color: '#155724', 
+                    padding: '6px 12px', 
+                    borderRadius: '8px',
+                    fontVariantNumeric: 'tabular-nums',
+                    fontSize: '18px',
+                    display: 'inline-block',
+                    border: '1px solid #c3e6cb'
+                  }}>{timeRemaining.hrs}h {timeRemaining.mins}m {timeRemaining.secs}s</strong>
+                </div>
+              )}
+            </div>
+          </div>
           <ul className="cart-page-list">
             {cart.items.map((item) => {
               const line = cartLineTotal(item)
@@ -81,6 +176,49 @@ export function CartPage() {
             })}
           </ul>
 
+          <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #eee', marginBottom: '24px' }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '16px' }}>Delivery Details</h3>
+            
+            {showError && (
+              <div style={{ color: '#d32f2f', backgroundColor: '#ffebee', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px', fontWeight: 'bold' }}>
+                Please fill in all details (name, phone, address) to proceed.
+              </div>
+            )}
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <input 
+                type="text" 
+                placeholder="Full Name" 
+                value={userDetails.name}
+                onChange={(e) => {
+                  setUserDetails(d => ({ ...d, name: e.target.value }))
+                  if (showError) setShowError(false)
+                }}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: showError && !userDetails.name.trim() ? '2px solid #d32f2f' : '1px solid #ccc', fontSize: '15px', boxSizing: 'border-box' }}
+              />
+              <input 
+                type="tel" 
+                placeholder="Phone Number" 
+                value={userDetails.phone}
+                onChange={(e) => {
+                  setUserDetails(d => ({ ...d, phone: e.target.value }))
+                  if (showError) setShowError(false)
+                }}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: showError && !userDetails.phone.trim() ? '2px solid #d32f2f' : '1px solid #ccc', fontSize: '15px', boxSizing: 'border-box' }}
+              />
+              <textarea 
+                placeholder="Full Delivery Address" 
+                value={userDetails.address}
+                onChange={(e) => {
+                  setUserDetails(d => ({ ...d, address: e.target.value }))
+                  if (showError) setShowError(false)
+                }}
+                rows={3}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: showError && !userDetails.address.trim() ? '2px solid #d32f2f' : '1px solid #ccc', fontSize: '15px', resize: 'vertical', boxSizing: 'border-box' }}
+              />
+            </div>
+          </div>
+
           <div className="cart-page-summary">
             <div>
               <span className="order-total-label">
@@ -91,7 +229,14 @@ export function CartPage() {
             <button
               type="button"
               className="btn-order"
-              onClick={cart.sendCartWhatsApp}
+              onClick={() => {
+                if (!userDetails.name.trim() || !userDetails.phone.trim() || !userDetails.address.trim()) {
+                  setShowError(true)
+                  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+                  return
+                }
+                cart.sendCartWhatsApp(userDetails)
+              }}
             >
               <MessageCircle size={20} />
               Send via WhatsApp

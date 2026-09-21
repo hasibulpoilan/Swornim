@@ -2,6 +2,7 @@ export type MenuItem = {
   id: string
   name: string
   price?: string
+  imageUrl?: string | null
 }
 
 export type MenuCategory = {

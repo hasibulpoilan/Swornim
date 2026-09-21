@@ -7,8 +7,9 @@ import {
   SlidersHorizontal,
   RotateCcw,
 } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import { useCart } from '../cart/CartContext'
+import { isPastCutoffTime } from '../cart/cartUtils'
 import { useMenu } from '../menu/MenuContext'
 import { ProductCard } from '../components/ProductCard'
 import { CartBar } from '../components/CartBar'
@@ -108,9 +109,32 @@ export function HomePage() {
     dietaryFilter !== 'ALL' ||
     priceSort !== 'DEFAULT'
 
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    const timer = setInterval(() => setTick(t => t + 1), 60000)
+    return () => clearInterval(timer)
+  }, [])
+  const pastCutoff = isPastCutoffTime()
+
   return (
-    <div className="split-layout">
-      <div className="left-panel">
+    <>
+      <div style={{
+        backgroundColor: pastCutoff ? '#343a40' : '#28a745',
+        color: 'white',
+        textAlign: 'center',
+        padding: '8px 16px',
+        fontWeight: 'bold',
+        fontSize: '14px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000
+      }}>
+        {pastCutoff 
+          ? '🌙 Currently accepting orders for Tomorrow!' 
+          : '🚚 Order by 8:30 PM for Same-Day Delivery!'}
+      </div>
+      <div className="split-layout">
+        <div className="left-panel">
         <div className="left-panel-content">
           <img
             src="/images/logo.jpeg"
@@ -287,11 +311,11 @@ export function HomePage() {
         selectedCount={cart.selected.length}
         cartCount={cart.count}
         totalPrice={cart.selectedSubtotal}
-        onSendWhatsApp={cart.sendSelectedWhatsApp}
       />
 
       <CartToast message={toastMsg} open={toastOpen} onClose={closeToast} />
     </div>
+    </>
   )
 }
 

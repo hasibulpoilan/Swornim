@@ -32,7 +32,7 @@ type CartContextValue = {
   removeItem: (id: string) => void
   clear: () => void
   getQty: (id: string) => number
-  sendCartWhatsApp: () => void
+  sendCartWhatsApp: (userDetails: { name: string; phone: string; address: string }) => void
 
   /** Checkbox quick-order (original WhatsApp flow) */
   selected: MenuItem[]
@@ -135,9 +135,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [items],
   )
 
-  const sendCartWhatsApp = useCallback(() => {
+  const sendCartWhatsApp = useCallback((userDetails: { name: string; phone: string; address: string }) => {
     if (items.length === 0) return
-    openWhatsApp(buildWhatsAppMessage(items))
+    openWhatsApp(buildWhatsAppMessage(items, userDetails))
   }, [items])
 
   /** Quick Order via checkbox selection — names only */

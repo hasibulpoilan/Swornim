@@ -34,14 +34,78 @@ export function cartItemCount(items: CartItem[]): number {
   return items.reduce((sum, item) => sum + item.qty, 0)
 }
 
-export function buildWhatsAppMessage(items: CartItem[]): string {
-  const lines = items.map((item) => {
+export function isPastCutoffTime(): boolean {
+  const now = new Date()
+  const hours = now.getHours()
+  const minutes = now.getMinutes()
+  return hours > 20 || (hours === 20 && minutes >= 30)
+}
+
+export function getTimeRemainingToCutoff(): { hrs: number; mins: number; secs: number } | null {
+  const now = new Date()
+  const target = new Date()
+  target.setHours(20, 30, 0, 0)
+
+  if (now > target) {
+    return null
+  }
+
+  const diffMs = target.getTime() - now.getTime()
+  const hrs = Math.floor(diffMs / (1000 * 60 * 60))
+  const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+  const secs = Math.floor((diffMs % (1000 * 60)) / 1000)
+  
+  return { hrs, mins, secs }
+}
+
+export type UserDetails = {
+  name: string
+  phone: string
+  address: string
+}
+
+export function buildWhatsAppMessage(items: CartItem[], userDetails?: UserDetails): string {
+  const pastCutoff = isPastCutoffTime()
+
+  let sameDayItems: CartItem[] = []
+  let nextDayItems: CartItem[] = []
+
+  if (pastCutoff) {
+    nextDayItems = items
+  } else {
+    sameDayItems = items.filter((i) => i.qty <= 10)
+    nextDayItems = items.filter((i) => i.qty > 10)
+  }
+
+  const formatItemLine = (item: CartItem) => {
     if (item.unitPrice !== null && item.unitPrice > 0) {
       const lineTotal = item.unitPrice * item.qty
       return `- ${item.name} x ${item.qty} (${formatRs(item.unitPrice)} each) = ${formatRs(lineTotal)}`
     }
     return `- ${item.name} x ${item.qty} (Price on request)`
-  })
+  }
+
+  const messageLines = ['Hi Swornim Delicacies, I would like to order:']
+
+  if (userDetails) {
+    messageLines.push(
+      '',
+      'Customer Details:',
+      `Name: ${userDetails.name}`,
+      `Phone: ${userDetails.phone}`,
+      `Address: ${userDetails.address}`
+    )
+  }
+
+  if (sameDayItems.length > 0) {
+    messageLines.push('', '--- Same-Day Delivery ---')
+    messageLines.push(...sameDayItems.map(formatItemLine))
+  }
+
+  if (nextDayItems.length > 0) {
+    messageLines.push('', "--- Tomorrow's Delivery ---")
+    messageLines.push(...nextDayItems.map(formatItemLine))
+  }
 
   const totalQty = items.reduce((sum, i) => sum + i.qty, 0)
   const pricedTotal = cartSubtotal(items)
@@ -51,13 +115,11 @@ export function buildWhatsAppMessage(items: CartItem[]): string {
     ? `Total Items: ${totalQty} pcs\nTotal Amount (priced items): ${formatRs(pricedTotal)}`
     : `Total Items: ${totalQty} pcs\nTotal Amount: ${formatRs(pricedTotal)}`
 
-  return [
-    'Hi Swornim Delicacies, I would like to order:',
-    ...lines,
-    '',
-    summaryLine,
-    'Please confirm.',
-  ].join('\n')
+  const timeString = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  
+  messageLines.push('', summaryLine, '', `(Order generated at ${timeString})`, 'Please confirm.')
+
+  return messageLines.join('\n')
 }
 
 export function toCartItem(item: MenuItem): CartItem {
