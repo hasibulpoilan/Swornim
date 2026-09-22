@@ -220,11 +220,23 @@ export function CartPage() {
           </div>
 
           <div className="cart-page-summary">
-            <div>
-              <span className="order-total-label">
-                {hasUnpriced ? 'Estimated total' : 'Total'}
-              </span>
-              <strong className="cart-page-total">{formatRs(cart.subtotal)}</strong>
+            <div style={{ flex: '1', width: '100%' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#555', fontSize: '15px' }}>
+                <span>Subtotal</span>
+                <strong>{formatRs(cart.subtotal)}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', color: '#555', fontSize: '15px' }}>
+                <span>Handling & Delivery</span>
+                <strong>+ {formatRs(60)}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed #ccc', paddingTop: '12px', alignItems: 'center' }}>
+                <span className="order-total-label" style={{ margin: 0, color: '#1c1917', fontSize: '16px' }}>
+                  {hasUnpriced ? 'Estimated Total' : 'Total Payable'}
+                </span>
+                <strong className="cart-page-total" style={{ color: '#ea580c', fontSize: '1.4rem' }}>
+                  {formatRs(cart.subtotal + 60)}
+                </strong>
+              </div>
             </div>
             <button
               type="button"

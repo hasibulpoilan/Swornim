@@ -109,11 +109,13 @@ export function buildWhatsAppMessage(items: CartItem[], userDetails?: UserDetail
 
   const totalQty = items.reduce((sum, i) => sum + i.qty, 0)
   const pricedTotal = cartSubtotal(items)
+  const deliveryFee = 60
+  const finalPayable = pricedTotal + deliveryFee
   const hasUnpriced = items.some((i) => i.unitPrice === null)
 
   const summaryLine = hasUnpriced
-    ? `Total Items: ${totalQty} pcs\nTotal Amount (priced items): ${formatRs(pricedTotal)}`
-    : `Total Items: ${totalQty} pcs\nTotal Amount: ${formatRs(pricedTotal)}`
+    ? `Total Items: ${totalQty} pcs\nSubtotal (priced items): ${formatRs(pricedTotal)}\nHandling & Delivery Fee: ${formatRs(deliveryFee)}\nFinal Payable: ${formatRs(finalPayable)}`
+    : `Total Items: ${totalQty} pcs\nSubtotal: ${formatRs(pricedTotal)}\nHandling & Delivery Fee: ${formatRs(deliveryFee)}\nFinal Payable: ${formatRs(finalPayable)}`
 
   const timeString = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
   
