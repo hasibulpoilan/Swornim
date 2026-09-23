@@ -1730,4 +1730,4 @@ export const MENU: MenuCategory[] = [
 ]
 
 /** WhatsApp number with country code, digits only. */
-export const WHATSAPP_NUMBER = '918240017974'
+export const WHATSAPP_NUMBER = '919073434301'

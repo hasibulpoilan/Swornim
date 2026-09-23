@@ -297,11 +297,7 @@ export function HomePage() {
             </div>
             <div className="contact-row">
               <Phone size={18} color="var(--primary)" />
-              +91 82400 17974
-            </div>
-            <div className="contact-row">
-              <Globe size={18} color="var(--primary)" />
-              www.swornimdelicacies.com
+              +91 90734 34301
             </div>
           </div>
         </div>

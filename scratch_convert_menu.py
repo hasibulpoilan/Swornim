@@ -24,7 +24,7 @@ menu_categories = []
 for cat, items in categories.items():
     menu_categories.append({"category": cat, "items": items})
 
-ts_code = "import type { MenuCategory } from '../types'\n\nexport const MENU: MenuCategory[] = " + json.dumps(menu_categories, indent=2) + "\n\n/** WhatsApp number with country code, digits only. */\nexport const WHATSAPP_NUMBER = '918240017974'\n"
+ts_code = "import type { MenuCategory } from '../types'\n\nexport const MENU: MenuCategory[] = " + json.dumps(menu_categories, indent=2) + "\n\n/** WhatsApp number with country code, digits only. */\nexport const WHATSAPP_NUMBER = '919073434301'\n"
 
 with open('src/data/menu.ts', 'w', encoding='utf-8') as f:
     f.write(ts_code)
