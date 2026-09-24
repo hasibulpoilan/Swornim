@@ -219,6 +219,9 @@ export function CartPage() {
             </div>
           </div>
 
+          <div style={{ textAlign: 'center', marginBottom: '12px', fontSize: '16px' }}>
+            <strong>Kindly note:</strong> Minimum order amount should be ₹ 300.
+          </div>
           <div className="cart-page-summary">
             <div style={{ flex: '1', width: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#555', fontSize: '15px' }}>
@@ -241,6 +244,11 @@ export function CartPage() {
             <button
               type="button"
               className="btn-order"
+              disabled={cart.subtotal < 300}
+              style={{
+                opacity: cart.subtotal < 300 ? 0.5 : 1,
+                cursor: cart.subtotal < 300 ? 'not-allowed' : 'pointer'
+              }}
               onClick={() => {
                 if (!userDetails.name.trim() || !userDetails.phone.trim() || !userDetails.address.trim()) {
                   setShowError(true)
