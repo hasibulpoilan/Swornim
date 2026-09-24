@@ -1,5 +1,5 @@
-import { ArrowLeft, MessageCircle, Minus, Plus, Trash2 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { ArrowLeft, MessageCircle, Minus, Plus, Trash2, AlertCircle, X } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useCart } from '../cart/CartContext'
 import { cartLineTotal, formatRs, isPastCutoffTime, getTimeRemainingToCutoff } from '../cart/cartUtils'
@@ -11,6 +11,8 @@ export function CartPage() {
 
   const [userDetails, setUserDetails] = useState({ name: '', phone: '', address: '' })
   const [showError, setShowError] = useState(false)
+  const [showMoqModal, setShowMoqModal] = useState(false)
+  const navigate = useNavigate()
 
   // Force re-render every second to keep time live
   const [, setTick] = useState(0)
@@ -39,6 +41,23 @@ export function CartPage() {
             : `${cart.count} item${cart.count > 1 ? 's' : ''} · edit quantity or remove below`}
         </p>
       </header>
+      
+      <style>{`
+        @keyframes blinker {
+          50% { opacity: 0.3; }
+        }
+        .blink-text {
+          animation: blinker 1.5s linear infinite;
+          color: #ea580c;
+        }
+      `}</style>
+
+      {!empty && (
+        <div className="blink-text" style={{ textAlign: 'center', margin: '0 20px 24px', fontSize: '16px', backgroundColor: '#fff3e0', padding: '12px', borderRadius: '8px', border: '1px solid #ffcc80' }}>
+          <strong>Kindly note:</strong> Minimum order amount should be ₹ 300.
+        </div>
+      )}
+
 
       {empty ? (
         <div className="cart-empty">
@@ -219,7 +238,8 @@ export function CartPage() {
             </div>
           </div>
 
-          <div style={{ textAlign: 'center', marginBottom: '12px', fontSize: '16px' }}>
+
+          <div className="blink-text" style={{ textAlign: 'center', marginBottom: '12px', fontSize: '16px' }}>
             <strong>Kindly note:</strong> Minimum order amount should be ₹ 300.
           </div>
           <div className="cart-page-summary">
@@ -244,12 +264,11 @@ export function CartPage() {
             <button
               type="button"
               className="btn-order"
-              disabled={cart.subtotal < 300}
-              style={{
-                opacity: cart.subtotal < 300 ? 0.5 : 1,
-                cursor: cart.subtotal < 300 ? 'not-allowed' : 'pointer'
-              }}
               onClick={() => {
+                if (cart.subtotal < 300) {
+                  setShowMoqModal(true)
+                  return
+                }
                 if (!userDetails.name.trim() || !userDetails.phone.trim() || !userDetails.address.trim()) {
                   setShowError(true)
                   window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
@@ -263,6 +282,53 @@ export function CartPage() {
             </button>
           </div>
         </>
+      )}
+
+      {showMoqModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: '#fff',
+            borderRadius: '16px',
+            padding: '30px',
+            maxWidth: '400px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+            position: 'relative'
+          }}>
+            <button 
+              onClick={() => setShowMoqModal(false)}
+              style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: '#666' }}
+            >
+              <X size={24} />
+            </button>
+            
+            <AlertCircle size={56} color="#ea580c" style={{ margin: '0 auto 16px' }} />
+            <h2 style={{ margin: '0 0 12px', fontSize: '22px', color: '#1c1917' }}>Almost there!</h2>
+            <p style={{ margin: '0 0 24px', color: '#555', fontSize: '16px', lineHeight: '1.5' }}>
+              Please add <strong>{formatRs(300 - cart.subtotal)}</strong> more to reach our minimum order amount of <strong>₹300</strong>.
+            </p>
+            <button 
+              className="btn-order" 
+              onClick={() => {
+                setShowMoqModal(false)
+                navigate('/')
+              }}
+              style={{ width: '100%' }}
+            >
+              Browse Menu & Add Items
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )
